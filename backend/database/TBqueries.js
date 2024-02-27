@@ -13,35 +13,11 @@ const userTb = `CREATE TABLE IF NOT EXISTS users(
     CONSTRAINT PKKey PRIMARY KEY(id)
 );`
 
-const warehousesTb = `CREATE TABLE IF NOT EXISTS warehouses(
-    id VARCHAR(255),
-    name VARCHAR(255),
-    city VARCHAR(255),
-    state VARCHAR(255),
-    pincode INT(20),
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT PKKey PRIMARY KEY(id)
-);`
-
-const shopsTb = `CREATE TABLE IF NOT EXISTS shops(
-    id VARCHAR(255),
-    name VARCHAR(255),
-    storeImage VARCHAR(255),
-    city VARCHAR(255),
-    state VARCHAR(255),
-    pincode INT(20),
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT PKKey PRIMARY KEY(id)
-);`
-
 const sellerTb = `CREATE TABLE IF NOT EXISTS sellers(
     id VARCHAR(255),
     isApproved TINYINT(1),
     profileImage VARCHAR(255),
     contact INT(10),
-    shopId VARCHAR(255),
     gstNumber VARCHAR(255),
     aadharId VARCHAR(16),
     aadharImage VARCHAR(255),
@@ -54,17 +30,67 @@ const sellerTb = `CREATE TABLE IF NOT EXISTS sellers(
     CONSTRAINT warehouseIdFKKey FOREIGN KEY(shopId) REFERENCES shops(id)
 );`
 
+const shopsTb = `CREATE TABLE IF NOT EXISTS shops(
+    id VARCHAR(255),
+    shopId VARCHAR(255),
+    name VARCHAR(255),
+    storeImage VARCHAR(255),
+    city VARCHAR(255),
+    state VARCHAR(255),
+    pincode INT(20),
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT PKKey PRIMARY KEY(id)
+);`
+
+const productTb = `CREATE TABLE IF NOT EXISTS products(
+    id VARCHAR(255),
+    sellerId VARCHAR(255),
+    image VARCHAR(255),
+    name VARCHAR(255),
+    brand VARCHAR(255),
+    description VARCHAR(255),
+    category VARCHAR(255),
+    price INT(10),
+    stock INT(10),
+    rating VARCHAR(1),
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT PKKey PRIMARY KEY(id),
+    CONSTRAINT productSellerIdFKKey FOREIGN KEY(sellerId) REFERENCES sellers(id)
+);`
+
+const productImagesTb = `CREATE TABLE IF NOT EXISTS productimages(
+    productId VARCHAR(255),
+    image VARCHAR(255),
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT productImagesProductIdFKKey FOREIGN KEY(productId) REFERENCES products(id)
+);`
+
 const expoterTb = `CREATE TABLE IF NOT EXISTS expoter(
     id VARCHAR(255),
     name VARCHAR(255),
-    warehouseId VARCHAR(255),
     createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT PKKey PRIMARY KEY(id),
     CONSTRAINT ExpoterFKKey FOREIGN KEY(id) REFERENCES users(id)
 );`
 
-const deliveryPersonTb = `CREATE TABLE IF NOT EXISTS deliveryPerson(
+const warehousesTb = `CREATE TABLE IF NOT EXISTS warehouses(
+    id VARCHAR(255),
+    expoterId VARCHAR(255),
+    name VARCHAR(255),
+    city VARCHAR(255),
+    state VARCHAR(255),
+    pincode INT(20),
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT PKKey PRIMARY KEY(id),
+    CONSTRAINT warehouseExpoterIdFKKey FOREIGN KEY(expoterId) REFERENCES expoter(id)
+);`
+
+const deliveryPersonTb = `CREATE TABLE IF NOT EXISTS deliveryperson(
     id VARCHAR(255),
     name VARCHAR(255),
     warehouseId VARCHAR(255),
@@ -121,10 +147,9 @@ const multipleStatementConncetion = mysql.createConnection({
     multipleStatements: true
 })
 
-
 try {
     multipleStatementConncetion.connect();
-    multipleStatementConncetion.query(`${userTb} ${sellerTb} ${addressTb}`, (error, result) => {
+    multipleStatementConncetion.query(`${userTb} ${sellerTb} ${shopsTb} ${productTb} ${productImagesTb} ${expoterTb} ${warehousesTb} ${deliveryPersonTb} ${addressTb} ${orderTb}`, (error, result) => {
         if (error) console.log(error)
         else console.log('Tables created');
     })
