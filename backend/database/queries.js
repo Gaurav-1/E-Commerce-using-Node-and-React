@@ -1,24 +1,41 @@
 const con = require('./connection')
 
-function search(props) {
+function search(params) {
     return new Promise((resolve, reject) => {
-        // console.log(props);
-        let qry = ''
+        try {
+            let qry = ''
 
-        if (props.columns && props.columns.length > 0) {
-            const columns = props.columns.join(', ');
-            qry = `SELECT ${columns} FROM ??`;
+            if (params.columns && params.columns.length > 0) {
+                const columns = params.columns.join(', ');
+                qry = `SELECT ${columns} FROM ??`;
+            }
+
+            if (params.where && params.where.length > 0)
+                qry += ` WHERE ${params.where}`
+            else {
+                reject('please peovide a vlaue for the condition')
+                return
+            }
+
+            con.query(qry, [params.table, params.condition, params.value], (error, result) => {
+                // console.log('Result', result);
+                if (error)
+                    reject(error)
+                else
+                    resolve(result)
+            })
+        } catch (error) {
+            console.log('search() ERROR: ', error);
+            reject(error)
         }
+    })
+}
 
-        if (props.condition && props.value != undefined)
-            qry += ` WHERE ??=?`
-        else {
-            reject('please peovide a vlaue for the condition')
-            return
-        }
-
-        con.query(qry, [props.table, props.condition, props.value], (error, result) => {
-            // console.log('Result', result);
+function insert(params) {
+    return new Promise((resolve, reject) => {
+        let qry = `INSERT INTO ?? VALUES(?)`
+        con.query(qry, [params.table, [...params.values]], (error, result) => {
+            // console.log('Result: ',result);
             if (error)
                 reject(error)
             else
@@ -27,11 +44,11 @@ function search(props) {
     })
 }
 
-function insert(props) {
+function update(params) {
     return new Promise((resolve, reject) => {
-        let qry = `INSERT INTO ?? VALUES(?)`
-        con.query(qry, [props.table, [...props.values]], (error, result) => {
-            // console.log('Result: ',result);
+        let qry = `UPDATE ?? SET ${params.set} where ${params.where}`
+
+        con.query(qry, params.table, (error, result) => {
             if (error)
                 reject(error)
             else
@@ -43,4 +60,5 @@ function insert(props) {
 module.exports = {
     search,
     insert,
+    update,
 }

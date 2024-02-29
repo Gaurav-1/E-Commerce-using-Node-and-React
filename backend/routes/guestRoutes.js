@@ -1,12 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const {
-    SignupUser
+    SignupUser,
+    VerfyGuest,
 } = require('../controllers/guestController')
 
 router.route('/signup')
     .post(SignupUser)
 
+router.route('/verify')
+    .get(VerfyGuest)
+    
 // router.route('/sellerSingup')
 //     .post()
 
@@ -19,7 +23,5 @@ router.route('/signup')
 // router.route('/sendVerificationMail')
 //     .post()
 
-// router.route('/verify/:id')
-//     .get()
 
 module.exports = router
