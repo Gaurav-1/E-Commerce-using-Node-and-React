@@ -4,6 +4,7 @@ const {
     SignupUser,
     VerifyGuest,
     SendVerificationMail,
+    Login,
 } = require('../controllers/guestController')
 
 router.route('/signup')
@@ -18,8 +19,8 @@ router.route('/sendVerificationMail')
 // router.route('/sellerSingup')
 //     .post()
 
-// router.route('/login')
-//     .post()
+router.route('/login')
+    .post(Login)
 
 // router.route('/forgetPassword')
 //     .post()
