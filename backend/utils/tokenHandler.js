@@ -1,12 +1,23 @@
 const jwt = require('jsonwebtoken');
 
-function generateToken(params, validTill = '30d') {
-    console.log({...params})
-    console.log(validTill);
-    return jwt.sign(params, process.env.SECRETKEY, { expiresIn: validTill })
+async function generateToken(params, validTill = '30d') {
+    return new Promise((resolve, reject) => {
+        try {
+            console.log('Token parameters: ',{...params})
+            console.log('Token validation: ',validTill);
+            if (Object.keys(params).length > 0){
+                let token = jwt.sign(params, process.env.SECRETKEY, { expiresIn: validTill })
+                resolve(token)
+            }
+            else
+                throw new Error('Token parameters required')
+        } catch (error) {
+            reject(error.message)
+        }
+    })
 }
 
-function verifyToken(token) {
+async function verifyToken(token) {
     return new Promise((resolve, reject) => {
         try {
             if (!token)

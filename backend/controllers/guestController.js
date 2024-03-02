@@ -7,6 +7,9 @@ const {
     update,
 } = require('../database/queries')
 
+//-- searchObj = { columns: 'columns names' || ['with functions','or multiple columns'], table: 'table name', where: 'where condition' } --------
+//-- insertObj = { table: 'table name', values: [values] } ----------------------
+//-- updateObj = { table: 'table name', set: 'columns = values', where: 'where condition' }
 
 async function SignupUser(req, res) {
     try {
@@ -45,18 +48,18 @@ async function SignupUser(req, res) {
         // console.log(isInserted)
         //-- an object with affectedRows: 1 return when data is inserted ----------------------------
         if (isInserted.affectedRows == 1) {
-            let token = generateToken({id},'10m')
-            let isMailSent = await verificationMail({token, email: req.body.email, name: req.body.name })
+            let token = generateToken({ id }, '10m')
+            let isMailSent = await verificationMail({ token, email: req.body.email, name: req.body.name })
             // console.log('Is Mail Sent: ', isMailSent);
 
-            //-- if messageId is found inside the object recived in isMailSent then success -----------------------
+            //-- when mail sent successfully it will retrun an messageId -----------------------
             if (isMailSent?.messageId)
                 res.status(200).json({ message: 'Signup Done. Verification mail has been sent to your mail.' })
             else
                 res.status(200).json({ message: `Signup Done but verification mail can't be sent. Go to send verification mail link` })
         }
         else
-            res.status(500).json({ error: 'Singup failed due to server error' })
+            res.status(500).json({ error: 'Singup failed due to server side error' })
 
     } catch (error) {
         console.log('SignupUser() ERROR: ', error);
@@ -110,34 +113,75 @@ async function verificationMail(params) {
     })
 }
 
-async function VerfyGuest(req,res){
+async function VerifyGuest(req, res) {
     try {
-        if(!req?.query?.token){
-            res.status(404).json({error: 'Token not found please regenrate the link.'})
+        //-- check token is available in req.query or not ----------------------------
+        if (!req?.query?.token) {
+            res.status(404).json({ error: 'Token not found please regenrate the link.' })
             return
         }
 
+        //-- verify and decode the token ------------------------
         let token = await verifyToken(req.query.token)
-        // console.log(token);
+        console.log(token);
+
+        //-- create a update query object -----------------------
         let updateObj = {
             table: 'users',
             set: 'isVerified=1',
             where: `id = '${token.id}'`
         }
 
-        let isVerified = await update(updateObj)
-        // console.log(isVerified);
-        if(isVerified.changedRows)
-            res.status(200).json({message: 'Verification Completed. Please enjoy shopping.'})
+        let isVerified = await update(updateObj) //-- call update query --------------
+
+        console.log(isVerified);
+        if (isVerified.affectedRows)
+            res.status(200).json({ message: 'Verification Completed. Please enjoy shopping.' })
         else
-            res.status(401).json({error: 'Verification Failed. Please regenerate the link'})
+            res.status(401).json({ error: 'Verification Failed. Please regenerate the link' })
+
     } catch (error) {
-        console.log('VerifyGuest() Error: ',error);
-        res.status(500).json({error: 'An error occured on the server side.'})
+        console.log('VerifyGuest() Error: ', error);
+        res.status(500).json({ error: error.message })
+    }
+}
+
+async function SendVerificationMail(req, res) {
+    try {
+        //-- search object to user -------------------
+        let searchObj = {
+            columns: ['id', 'name'],
+            table: 'users',
+            where: `mail = '${req.body.email}'`
+        }
+        let user = await search(searchObj) //-- call search query -------------------
+
+        console.log(user[0]);
+        if (!user || !user[0]?.id) {
+            res.status(404).json({ error: 'user not found' })
+            return
+        }
+
+        //-- build token containing user id with 10 minutes validation -----------------
+        let token = await generateToken({ id: user[0].id }, '10m')
+
+        //-- send verification mail --------------------------
+        let isMailSent = await verificationMail({ token, email: req.body.email, name: user[0].name })
+
+        //-- if mail is sent it will return an messageId ---------------------------
+        if (isMailSent?.messageId)
+            res.status(200).json({ message: 'Verification mail sent.' })
+        else
+            res.status(401).json({ error: 'Unable to send the verification mail.' })
+
+    } catch (error) {
+        console.log('SendVerificationMail() ERROR: ', error);
+        res.status(500).json({ error: error.message })
     }
 }
 
 module.exports = {
     SignupUser,
-    VerfyGuest,
+    VerifyGuest,
+    SendVerificationMail,
 }
