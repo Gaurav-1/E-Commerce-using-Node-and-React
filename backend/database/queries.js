@@ -6,18 +6,21 @@ function search(params) {
             let qry = ''
 
             if (params.columns && params.columns.length > 0) {
-                const columns = params.columns.join(', ');
-                qry = `SELECT ${columns} FROM ??`;
+                // const columns = params.columns.join(', ');
+                qry = `SELECT ${params.columns} FROM ??`;
             }
 
             if (params.where && params.where.length > 0)
                 qry += ` WHERE ${params.where}`
-            else {
-                reject('please peovide a vlaue for the condition')
+
+            if (params.limit && params.skip)
+                qry += ` LIMIT ${params.limit} OFFSET ${params.skip}`
+            if(params.limit < 1 ){
+                reject('please provide limit and offset')
                 return
             }
-
-            con.query(qry, [params.table, params.condition, params.value], (error, result) => {
+            
+            con.query(qry, [params.table], (error, result) => {
                 // console.log('Result', result);
                 if (error)
                     reject(error)

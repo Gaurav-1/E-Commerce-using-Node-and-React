@@ -2,17 +2,21 @@ const express = require('express');
 const router = express.Router();
 const {
     SignupUser,
-    VerifyGuest,
+    VerifyUser,
     SendVerificationMail,
     Login,
-} = require('../controllers/guestController')
+    ForgetPassword,
+    JwtLogin,
+    ChangePassword,
+} = require('../controllers/mainController');
+const { authenticate } = require('../utils/authenticate');
 
 router.route('/signup')
     .post(SignupUser)
 
 router.route('/verify')
-    .get(VerifyGuest)
-    
+    .get(VerifyUser)
+
 router.route('/sendVerificationMail')
     .post(SendVerificationMail)
 
@@ -22,9 +26,14 @@ router.route('/sendVerificationMail')
 router.route('/login')
     .post(Login)
 
-// router.route('/forgetPassword')
-//     .post()
+router.route('/forgetPassword')
+    .post(ForgetPassword)
 
+router.route('/jwtLogin')
+    .get(JwtLogin)
 
+router.route('/changePassword')
+    .all(authenticate)
+    .post(ChangePassword)
 
 module.exports = router

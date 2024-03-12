@@ -3,7 +3,8 @@ require('dotenv').config();
 const express = require('express')
 const cors = require('cors');
 const upload = require('multer')
-const guestRoutes = require('./routes/guestRoutes')
+const mainRoutes = require('./routes/mainRoutes')
+const userRoutes = require('./routes/userRoutes')
 
 require('./database/TBqueries')
 
@@ -49,11 +50,10 @@ catch (err) {
 
 // https://dummyjson.com/products?limit=100&skip=0
 
-//-- guest routes -------------
-app.use('/guest',guestRoutes)
+
 
 //-- user routes --------------
-// app.use('/user')
+app.use('/user',userRoutes)
 
 //-- seller routes ------------
 // app.use('/seller')
@@ -63,3 +63,6 @@ app.use('/guest',guestRoutes)
 
 //-- admin routes -------------
 // app.use('/admin')
+
+//-- guest routes -------------
+app.use('/',mainRoutes)
