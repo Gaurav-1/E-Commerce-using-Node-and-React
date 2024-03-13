@@ -18,7 +18,7 @@ async function Products(req, res) {
             res.status(401).json({ error: 'Paggination not recived' })
             return
         }
-
+        //-- search the product based on limit and skip -------------------------
         const searchObj = {
             columns: `id, image, name, brand, description, category, price, stock, rating`,
             table: 'products',
@@ -47,6 +47,7 @@ async function AddToCart(req, res) {
             return
         }
 
+        //-- search the product for some validation ---------------------
         const ProductSearchObj = {
             columns: `id, stock, price`,
             table: 'products',
@@ -54,21 +55,30 @@ async function AddToCart(req, res) {
         }
         const products = await search(ProductSearchObj)
         if (!products[0]) {
-            res.status(401).json({ error: 'Invalid Product ID' })
+            res.status(401).json({ error: 'Invalid Product ID.' })
+            return
+        }
+        //-- stock checking ---------------------------
+        if(products[0]?.stock < 1){
+            res.status(409).json({error: 'Product out of stock.'})
             return
         }
 
+        //-- search for the existing cart -------------------------------
         const CartSearchObj = {
             columns: `*`,
             table: 'carts',
             where: `userId = '${req.body.id}' AND productId = '${req.body.productId}'`
         }
         const cart = await search(CartSearchObj)
-        if (cart[0]?.quantity >= 10) {
-            res.status(409).json({ error: 'Only 10 products at once.' })
+        //-- check the cart quantity max limit ----------------------
+        if (cart[0]?.quantity == 10) {
+            res.status(409).json({ error: 'Maximum limit reached.' })
             return
         }
+        //-- if no cart found -------------------
         if (!cart[0]?.userId) {
+            //-- insert new cart -------------------------
             const insertObj = {
                 table: 'carts',
                 values: [req.body.id, req.body.productId, 1, products[0].price, '', '']
@@ -80,7 +90,9 @@ async function AddToCart(req, res) {
                 res.status(409).json({ error: 'Failed to add in cart.' })
             return
         }
+        //-- if cart found -------------------------
         else {
+            //-- update the quantity of existing cart ------------------------
             const updateObj = {
                 table: 'carts',
                 set: `quantity = quantity + 1`,
@@ -101,6 +113,7 @@ async function AddToCart(req, res) {
 
 async function MyCart(req, res) {
     try {
+        //-- search for the user cart with user id and product id ------------------------
         const searchObj = {
             columns: `*`,
             table: 'carts',
@@ -118,8 +131,54 @@ async function MyCart(req, res) {
     }
 }
 
+async function UpdateQuantity(req, res) {
+    try {
+        if (!req?.body?.productId || !req.body?.operation || req.body.operation.length != 1 || !['-', '+'].some(el => req.body.operation.includes(el))) {
+            res.status(401).json({ error: 'Proper details not recived.' })
+            return
+        }
+        //-- search for cart first for some validation
+        const searchObj = {
+            columns: `*`,
+            table: 'carts',
+            where: `userId = '${req.body.id}' AND productId = '${req.body.productId}'`
+        }
+        const cart = await search(searchObj)
+        if (!cart[0]) {
+            res.status(409).json({ error: 'Cart item not found.' })
+            return
+        }
+        //-- checks for limit because sql throws error and currently unable to handle ----------------------
+        if (cart[0]?.quantity == 1 && req?.body?.operation == '-') {
+            res.status(409).json({ error: 'Minimum limit reach.' })
+            return
+        }
+        if (cart[0].quantity == 10 && req?.body?.operation == '+') {
+            res.status(409).json({ error: 'Maximum limit reached.' })
+            return
+        }
+        //-- update the quantity based on the operation recived -----------------------------
+        const updateObj = {
+            table: 'carts',
+            set: `quantity = quantity ${req.body.operation} 1`,
+            where: `userId = '${req.body.id}' AND productId = '${req.body.productId}'`
+        }
+        const isUpdated = await update(updateObj)
+        if (isUpdated?.affectedRows == 1) {
+            res.status(200).json({ message: 'Successfully updated.' })
+            return
+        }
+        res.status(401).json({ error: 'Failed to update.' })
+
+    } catch (error) {
+        console.log('UpdateQuantity() Error: ', error);
+        res.status(500).json({ error: 'Server side error. Try again' })
+    }
+}
+
 module.exports = {
     Products,
     AddToCart,
     MyCart,
+    UpdateQuantity,
 }

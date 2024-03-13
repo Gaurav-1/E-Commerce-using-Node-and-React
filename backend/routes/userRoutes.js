@@ -5,6 +5,7 @@ const {
     Products,
     AddToCart,
     MyCart,
+    UpdateQuantity,
 } = require('../controllers/userController')
 
 router.route('/products')
@@ -25,7 +26,7 @@ router.route('/myCart')
 
 router.route('/updateQuantity')
     .all(authenticate)
-    .post()
+    .post(UpdateQuantity)
 
 // router.route('/deleteFromCart')
 //     .all(authenticate)
