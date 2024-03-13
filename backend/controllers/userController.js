@@ -33,7 +33,7 @@ async function Products(req, res) {
             return
         }
 
-        res.status(200).json({ message: products[0] })
+        res.status(200).json({ message: products })
     } catch (error) {
         console.log('Products() Error: ', error);
         res.status(500).json({ error: 'Server side error occured' })
@@ -64,8 +64,8 @@ async function AddToCart(req, res) {
             where: `userId = '${req.body.id}' AND productId = '${req.body.productId}'`
         }
         const cart = await search(CartSearchObj)
-        if(cart[0]?.quantity >= 10){
-            res.status(409).json({error: 'Only 10 products at once.'})
+        if (cart[0]?.quantity >= 10) {
+            res.status(409).json({ error: 'Only 10 products at once.' })
             return
         }
         if (!cart[0]?.userId) {
@@ -99,9 +99,27 @@ async function AddToCart(req, res) {
     }
 }
 
-
+async function MyCart(req, res) {
+    try {
+        const searchObj = {
+            columns: `*`,
+            table: 'carts',
+            where: `userId = '${req.body.id}'`
+        }
+        const cart = await search(searchObj)
+        if (!cart[0]?.userId) {
+            res.status(409).json({ error: `You haven't placed any order yet` })
+            return
+        }
+        res.status(200).json({ message: cart })
+    } catch (error) {
+        console.log('MyCart() Error: ', error);
+        res.status(500).json({ error: 'Server side error. Try again' })
+    }
+}
 
 module.exports = {
     Products,
     AddToCart,
+    MyCart,
 }

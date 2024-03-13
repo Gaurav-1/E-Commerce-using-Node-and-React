@@ -4,6 +4,7 @@ const { authenticate } = require('../utils/authenticate');
 const {
     Products,
     AddToCart,
+    MyCart,
 } = require('../controllers/userController')
 
 router.route('/products')
@@ -18,13 +19,13 @@ router.route('/addToCart')
     .all(authenticate)
     .post(AddToCart)
 
-// router.route('/myCart')
-//     .all(authenticate)
-//     .get()
+router.route('/myCart')
+    .all(authenticate)
+    .get(MyCart)
 
-// router.route('/updateQuantity')
-//     .all(authenticate)
-//     .post()
+router.route('/updateQuantity')
+    .all(authenticate)
+    .post()
 
 // router.route('/deleteFromCart')
 //     .all(authenticate)
