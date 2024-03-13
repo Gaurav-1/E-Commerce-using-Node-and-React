@@ -5,12 +5,14 @@ const {
     search,
     insert,
     update,
+    deletes,
 } = require('../database/queries')
 const { errorMonitor } = require('nodemailer/lib/xoauth2')
 
 //-- searchObj = { columns: `columns`, table: 'table name', where: `where condition` } ---------------
 //-- insertObj = { table: 'table name', values: [values] } ----------------------
 //-- updateObj = { table: 'table name', set: `columns = values`, where: `where condition` } ----------
+//-- deleteObj = { table: 'table name', where: `where condition` } -----------------
 
 async function Products(req, res) {
     try {
@@ -176,9 +178,36 @@ async function UpdateQuantity(req, res) {
     }
 }
 
+async function DeleteFromCart(req,res){
+    try {
+        if(!req?.body?.productId){
+            res.status(401).json({error: 'Product details not recived'})
+            return
+        }
+        //-- delete the product from carts table ---------------------------
+        const deleteObj ={
+            table: 'carts',
+            where: `userId = '${req.body.id}' AND productId = '${req.body.productId}'`
+        }
+        const isDeleted = await deletes(deleteObj)
+        console.log(isDeleted)
+        //-- if product is removed send this response -----------------------
+        if(isDeleted?.affectedRows == 1){
+            res.status(200).json({message: 'Product removed.'})
+            return
+        }
+        //-- if product is not removed send this response -----------------------
+        res.status(409).json({error: 'Unable to remove the product.'})
+    } catch (error) {
+        console.log('DeleteFromCart() Error: ',error);
+        res.status(500).json({message: 'Server side error.'})
+    }
+}
+
 module.exports = {
     Products,
     AddToCart,
     MyCart,
     UpdateQuantity,
+    DeleteFromCart,
 }

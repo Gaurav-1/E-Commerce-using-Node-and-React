@@ -60,8 +60,25 @@ function update(params) {
     })
 }
 
+function deletes(params){
+    return new Promise((resolve,reject)=>{
+        if(!params?.where)
+            reject('where condition not found')
+            
+        let qry = `DELETE FROM ?? WHERE ${params.where}`
+
+        con.query(qry,params.table,(error,result)=>{
+            if(error)
+                reject(error)
+            else
+                resolve(result)
+        })
+    })
+}
+
 module.exports = {
     search,
     insert,
     update,
+    deletes,
 }

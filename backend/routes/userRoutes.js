@@ -6,6 +6,7 @@ const {
     AddToCart,
     MyCart,
     UpdateQuantity,
+    DeleteFromCart,
 } = require('../controllers/userController')
 
 router.route('/products')
@@ -26,17 +27,17 @@ router.route('/myCart')
 
 router.route('/updateQuantity')
     .all(authenticate)
-    .post(UpdateQuantity)
+    .patch(UpdateQuantity)
 
-// router.route('/deleteFromCart')
+router.route('/deleteFromCart')
+    .all(authenticate)
+    .delete(DeleteFromCart)
+
+// router.route('/placeOrder')
 //     .all(authenticate)
 //     .post()
 
-// router.route('/order')
-//     .all(authenticate)
-//     .post()
-
-// router.route('/myOrder')
+// router.route('/myOrders')
 //     .all(authenticate)
 //     .get()
 
@@ -44,10 +45,7 @@ router.route('/updateQuantity')
 //     .all(authenticate)
 //     .post()
 
-// router.route('/changePassword/:id')
-//     .post()
-
-// router.route('/changePassword')
+// router.route('/trackOrder')
 //     .all(authenticate)
 //     .post()
 
