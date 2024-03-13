@@ -61,8 +61,8 @@ async function AddToCart(req, res) {
             return
         }
         //-- stock checking ---------------------------
-        if(products[0]?.stock < 1){
-            res.status(409).json({error: 'Product out of stock.'})
+        if (products[0]?.stock < 1) {
+            res.status(409).json({ error: 'Product out of stock.' })
             return
         }
 
@@ -178,29 +178,49 @@ async function UpdateQuantity(req, res) {
     }
 }
 
-async function DeleteFromCart(req,res){
+async function DeleteFromCart(req, res) {
     try {
-        if(!req?.body?.productId){
-            res.status(401).json({error: 'Product details not recived'})
+        if (!req?.body?.productId) {
+            res.status(401).json({ error: 'Product details not recived' })
             return
         }
         //-- delete the product from carts table ---------------------------
-        const deleteObj ={
+        const deleteObj = {
             table: 'carts',
             where: `userId = '${req.body.id}' AND productId = '${req.body.productId}'`
         }
         const isDeleted = await deletes(deleteObj)
         console.log(isDeleted)
         //-- if product is removed send this response -----------------------
-        if(isDeleted?.affectedRows == 1){
-            res.status(200).json({message: 'Product removed.'})
+        if (isDeleted?.affectedRows == 1) {
+            res.status(200).json({ message: 'Product removed.' })
             return
         }
         //-- if product is not removed send this response -----------------------
-        res.status(409).json({error: 'Unable to remove the product.'})
+        res.status(409).json({ error: 'Unable to remove the product.' })
     } catch (error) {
-        console.log('DeleteFromCart() Error: ',error);
-        res.status(500).json({message: 'Server side error.'})
+        console.log('DeleteFromCart() Error: ', error);
+        res.status(500).json({ message: 'Server side error.' })
+    }
+}
+
+async function MyOrders(req, res) {
+    try {
+        const searchObj = {
+            columns: `*`,
+            table: 'orders',
+            where: `userId = '${req.body.id}'`
+        }
+        const orders = await search(searchObj)
+        // console.log(orders);
+        if (!orders[0]?.id) {
+            res.status(409).json({ error: 'No orders to show' })
+            return
+        }
+        res.status(200).json({ message: orders })
+    } catch (error) {
+        console.log('MyOrders() Error: ', error);
+        res.status(500).json({ error: 'Server side error. Try again' })
     }
 }
 
@@ -210,4 +230,5 @@ module.exports = {
     MyCart,
     UpdateQuantity,
     DeleteFromCart,
+    MyOrders,
 }
