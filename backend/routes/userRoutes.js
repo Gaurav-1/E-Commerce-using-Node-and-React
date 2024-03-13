@@ -3,6 +3,7 @@ const router = express.Router();
 const { authenticate } = require('../utils/authenticate');
 const {
     Products,
+    AddToCart,
 } = require('../controllers/userController')
 
 router.route('/products')
@@ -13,13 +14,13 @@ router.route('/products')
 //     .all(authenticate)
 //     .post()
 
+router.route('/addToCart')
+    .all(authenticate)
+    .post(AddToCart)
+
 // router.route('/myCart')
 //     .all(authenticate)
 //     .get()
-
-// router.route('/addToCart')
-//     .all(authenticate)
-//     .post()
 
 // router.route('/updateQuantity')
 //     .all(authenticate)

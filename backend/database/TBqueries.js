@@ -138,6 +138,19 @@ const orderTb = `CREATE TABLE IF NOT EXISTS orders(
     CONSTRAINT OrdersAFKKey FOREIGN KEY(addressId) REFERENCES address(id)
 );`
 
+const cartTb = `CREATE TABLE IF NOT EXISTS carts(
+    userId VARCHAR(255),
+    productId VARCHAR(255),
+    quantity INT(5),
+    bill INT(10),
+    createAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT PKKey PRIMARY KEY(userId, productId),
+    CONSTRAINT CartUFKKey FOREIGN KEY(userId) REFERENCES users(id),
+    CONSTRAINT CartPFKKey FOREIGN KEY(productId) REFERENCES products(id),
+    CONSTRAINT QuantityLimit CHECK (quantity>0 AND quantity<11)
+)`
+
 
 const multipleStatementConncetion = mysql.createConnection({
     host: process.env.DBHOST,
@@ -149,7 +162,7 @@ const multipleStatementConncetion = mysql.createConnection({
 
 try {
     multipleStatementConncetion.connect();
-    multipleStatementConncetion.query(`${userTb} ${sellerTb} ${shopsTb} ${productTb} ${productImagesTb} ${expoterTb} ${warehousesTb} ${deliveryPersonTb} ${addressTb} ${orderTb}`, (error, result) => {
+    multipleStatementConncetion.query(`${userTb} ${sellerTb} ${shopsTb} ${productTb} ${productImagesTb} ${expoterTb} ${warehousesTb} ${deliveryPersonTb} ${addressTb} ${orderTb} ${cartTb}`, (error, result) => {
         if (error) console.log(error)
         else console.log('Tables created');
     })

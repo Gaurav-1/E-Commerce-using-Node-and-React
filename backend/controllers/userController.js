@@ -40,7 +40,68 @@ async function Products(req, res) {
     }
 }
 
+async function AddToCart(req, res) {
+    try {
+        if (!req?.body?.productId) {
+            res.status(401).json({ error: 'Proper details not recived' })
+            return
+        }
+
+        const ProductSearchObj = {
+            columns: `id, stock, price`,
+            table: 'products',
+            where: `id = '${req.body.productId}'`
+        }
+        const products = await search(ProductSearchObj)
+        if (!products[0]) {
+            res.status(401).json({ error: 'Invalid Product ID' })
+            return
+        }
+
+        const CartSearchObj = {
+            columns: `*`,
+            table: 'carts',
+            where: `userId = '${req.body.id}' AND productId = '${req.body.productId}'`
+        }
+        const cart = await search(CartSearchObj)
+        if(cart[0]?.quantity >= 10){
+            res.status(409).json({error: 'Only 10 products at once.'})
+            return
+        }
+        if (!cart[0]?.userId) {
+            const insertObj = {
+                table: 'carts',
+                values: [req.body.id, req.body.productId, 1, products[0].price, '', '']
+            }
+            const isInserted = await insert(insertObj)
+            if (isInserted.affectedRows == 1)
+                res.status(200).json({ message: 'Product added to cart.' })
+            else
+                res.status(409).json({ error: 'Failed to add in cart.' })
+            return
+        }
+        else {
+            const updateObj = {
+                table: 'carts',
+                set: `quantity = quantity + 1`,
+                where: `userId = '${req.body.id}' AND productId = '${req.body.productId}'`
+            }
+            const isUpdated = await update(updateObj)
+            if (isUpdated.affectedRows == 1)
+                res.status(200).json({ message: 'Product added to cart.' })
+            else
+                res.status(409).json({ error: 'Failed to add in cart.' })
+            return
+        }
+    } catch (error) {
+        console.log('AddToCart() Error: ', error);
+        res.status(500).json({ error: 'Server side error. Try again' })
+    }
+}
+
+
 
 module.exports = {
     Products,
+    AddToCart,
 }
