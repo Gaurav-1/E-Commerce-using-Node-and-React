@@ -8,6 +8,7 @@ const {
     UpdateQuantity,
     DeleteFromCart,
     MyOrders,
+    AddAddress,
 } = require('../controllers/userController')
 
 router.route('/products')
@@ -33,6 +34,10 @@ router.route('/updateQuantity')
 router.route('/deleteFromCart')
     .all(authenticate)
     .delete(DeleteFromCart)
+
+router.route('/addAddress')
+.all(authenticate)
+.post(AddAddress)
 
 // router.route('/placeOrder')
 //     .all(authenticate)

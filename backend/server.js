@@ -66,3 +66,6 @@ app.use('/user',userRoutes)
 
 //-- guest routes -------------
 app.use('/',mainRoutes)
+
+//-- not a valid route ------------------w
+app.all('*', (req, res) => res.status(404).send('Bad Request'))

@@ -221,7 +221,7 @@ async function Login(req, res) {
             return
         }
         //-- generate token for server side stateless authorization. Valid for 30 days ----------------------
-        const token = await generateToken({ id: user[0].id, email: req.body.email })
+        const token = await generateToken({ id: user[0].id, email: req.body.email, role: user[0].role })
         //-- object for client side authorization. Store in localStorage ------------------------------
         const auth = {
             name: user[0].name,

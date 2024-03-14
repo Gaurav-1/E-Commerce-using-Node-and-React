@@ -224,6 +224,28 @@ async function MyOrders(req, res) {
     }
 }
 
+async function AddAddress(req, res) {
+    try {
+        if (!req?.body?.reciverName || !req.body?.contact || !req.body?.houseNo || !req.body?.street || !req.body?.city || !req.body?.state || !req.body?.pincode) {
+            res.status(401).json({ error: 'Details not recived properly.' })
+            return
+        }
+        const insertObj = {
+            table: 'address',
+            values: [uuid(), req.body.id, req.body.reciverName, req.body.contact, req.body.houseNo, req.body.street, req.body?.landmark || '', req.body.city, req.body.state, req.body.pincode, '', '']
+        }
+        const address = await insert(insertObj)
+        if (address.affectedRows == 1) {
+            res.status(200).json({ message: 'Address added successfully.' })
+            return
+        }
+        res.status(409).json({ error: 'Failed to add address.' })
+    } catch (error) {
+        console.log('AddAddress() Error: ', error);
+        res.status(500).json({ error: 'Server side error. Try again' })
+    }
+}
+
 module.exports = {
     Products,
     AddToCart,
@@ -231,4 +253,5 @@ module.exports = {
     UpdateQuantity,
     DeleteFromCart,
     MyOrders,
+    AddAddress,
 }
